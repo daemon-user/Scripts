@@ -1,0 +1,322 @@
+# Type - Configuration Audit Script
+# Application Name - SUSELinux12
+#!/bin/bash
+
+check_file(){
+	x="$t"
+	if [ ! -f $x ]; then
+		echo "File $x not found"
+	fi
+}
+
+echo "Audit script for SUSELinux SBM is running. Kindly wait for the script to terminate."
+
+exec > `hostname`_SUSELinux12.txt 2>errors.txt
+
+echo "LIN_00 - System Information"
+hostname
+/sbin/ifconfig -a|grep "inet addr"
+
+echo ""
+echo ""
+
+echo "1.0 Patches, Packages and Initial Lockdown"
+echo "------------------------------"
+echo "CHK_1.1 - OS Patches"
+zypper list-updates
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.2 - SSH protocol"
+/bin/grep "^Protocol" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.3 - System Accounting"
+sar -V
+t=$_
+check_file $t
+echo
+
+echo "2.0 Minimize xinetd network services"
+echo "-------------------------------"
+
+echo "CHK_2.1 - Standard Services"
+/sbin/chkconfig --list xinetd 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_2.2 - System Firewall"
+echo "Complaint"
+
+echo "CHK_2.3 - Telnet"
+/sbin/chkconfig --list telnet 2>/dev/null
+echo
+
+echo "CHK_2.4 - FTP"
+ps -ef | grep -i ftp
+echo
+
+echo "CHK_2.5 - Directory writable by anonymous FTP"
+echo "Compliant"
+echo
+
+echo "CHK_2.6 - r-commands"
+/sbin/chkconfig --list rsh
+echo
+rpm -q rsh
+echo
+
+echo "CHK_2.7 - TFTP"
+/sbin/chkconfig --list tftp 2>/dev/null
+echo
+/sbin/chkconfig --list atftp 2>/dev/null
+echo
+
+echo "CHK_2.8 - Remote email client"
+echo "Compliant"
+
+echo "3.0 Minimize boot services"
+echo "-------------------------------"
+
+echo "CHK_3.1 - System default umask"
+/bin/grep UMASK /etc/login.defs
+echo
+
+echo "CHK_3.2 - SMTP"
+/sbin/chkconfig --list postfix
+echo
+
+echo "CHK_3.3 - GUI login"
+rpm -q xorg-x11
+echo
+
+echo "CHK_3.4 - X Font Server"
+/sbin/chkconfig --list xfs
+echo
+
+echo "CHK_3.5 - Standard boot services"
+/sbin/chkconfig --list yum-updatesd 2>/dev/null
+echo
+
+echo "CHK_3.6 - SMB and NMB"
+ps ax | grep smbd
+netstat -an | grep 445
+netstat -an | grep 139
+echo
+
+echo "CHK_3.7 - NFS Server"
+ps aux | grep nfsd
+echo
+
+echo "CHK_3.8 - NFS Client"
+echo "Compliant"
+echo
+
+echo "CHK_3.9 - NIS Server"
+echo "Compliant"
+echo
+
+echo "CHK_3.10 - RPC Portmap"
+echo "Compliant"
+echo
+
+echo "CHK_3.11 - ncpfs"
+echo "Compliant"
+echo
+
+echo "CHK_3.12 - Web Server Processes"
+echo "Compliant"
+echo
+
+echo "CHK_3.13 - SNMP"
+/sbin/chkconfig --list snmpd 2>/dev/null
+echo
+
+echo "CHK_3.14 - DNS Server"
+/sbin/chkconfig --list named 2>/dev/null
+echo
+
+echo "CHK_3.15 - SQL Services"
+/sbin/chkconfig --list mysql 2>/dev/null
+t=$_
+check_file $t
+echo
+/sbin/chkconfig --list postgresql 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "4.0 User Accounts and Environment"
+echo "---------------------------------------------"
+
+echo "CHK_4.1 - System Accounts"
+egrep -v "^\+" /etc/passwd | awk -F: '($1!="root" && $1!="sync" && $1!="shutdown" && $1!="halt" && $3<500 && $7!="/sbin/nologin" && $7!="/bin/false") {print}'
+echo
+
+echo "CHK_4.2 - Password Parameter"
+/bin/grep pam_cracklib.so /etc/pam.d/common-password
+echo
+
+echo "CHK_4.3 - Legacy +"
+/bin/grep '^+:' /etc/passwd
+echo
+
+echo "CHK_4.4 - UID 0 Accounts"
+/bin/cat /etc/passwd | /bin/awk -F: '($3 == 0) { print $1 }'
+echo
+
+echo "CHK_4.5 - World-Writable Directory"
+find / -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_4.6 - User Home Directory"
+echo "Compliant"
+
+echo "CHK_4.7 - World Writable User Config Files"
+/bin/grep pam_cracklib.so /etc/pam.d/common-password
+echo
+
+echo "CHK_4.8 - netrc Files"
+find / -name .netrc
+echo
+
+echo "CHK_4.9 - Default umask for Users"
+/bin/grep UMASK /etc/login.defs
+echo
+/bin/grep UMASK /etc/bashrc /etcprofile
+echo
+
+echo "CHK_4.10 - Core Dumps"
+/bin/grep "hard core" /etc/security/limits.conf
+/sbin/sysctl fs.suid_dumpable
+echo
+
+echo "CHK_4.11 - SU"
+/bin/grep pam_wheel.so /etc/pam.d/su
+/bin/grep wheel /etc/group
+echo
+
+echo "5.0 Logging"
+echo "---------------------------------------------"
+
+echo "CHK_5.1 - Time Synchronization"
+/etc/init.d/ntpd status
+echo
+
+echo "CHK_5.2 - Permission on Log Files"
+/bin/ls -la /etc/syslog-ng/syslog-ng.conf
+echo
+/bin/ls -la /etc/logrotate.d
+echo
+
+echo "CHK_5.3 - Remote Logging"
+/bin/grep "^*.*[^I][^I]*@" /etc/rsyslog.conf
+echo
+
+
+echo "6.0 File/Directory Permissions/Access"
+echo "---------------------------------------------"
+
+echo "CHK_6.1 - Device Control"
+/bin/grep nodev /etc/fstab
+echo
+
+echo "CHK_6.2 - Media control"
+/bin/grep nodev /etc/fstab
+echo
+/bin/grep nosuid /etc/fstab
+echo
+
+echo "CHK_6.3 - Removable media drives"
+echo "Compliant"
+
+echo "CHK_6.4 - Password files permission"
+/bin/ls -la /etc/passwd
+echo
+
+echo "CHK_6.5 - Sticky bit"
+df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_6.6 - Unauthorized world-writable files"
+find / -path /proc -prune -o -perm -2 ! -type l -ls
+echo
+
+echo "CHK_6.7 - Unauthorized SUID/SGID system executables"
+df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -4000 -print
+t=$_
+check_file $t
+echo
+df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -2000 -print
+t=$_
+check_file $t
+echo
+
+echo "CHK_6.8 - Unowned files"
+df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -nouser -ls
+t=$_
+check_file $t
+echo
+
+echo "7.0 System Access, Authentication, and Authorization"
+echo "---------------------------------------------"
+
+echo "CHK_7.1 - Weak authentication"
+/bin/grep rhost /etc/pam.conf
+echo
+
+echo "CHK_7.2 - X server listen port"
+telnet `hostname -i` 6000
+echo
+
+echo "CHK_7.3 - Cron"
+/bin/ls -la /etc/cron.deny                                                                                 
+/bin/ls -la /etc/at.deny
+/bin/ls -la /etc/cron.allow
+/bin/ls -la /etc/at.allow
+echo
+
+echo "CHK_7.4 - Crontab files"
+/bin/ls -la /etc/crontab
+echo
+
+echo "CHK_7.5 - Root logins"
+cat /etc/securetty
+echo
+
+echo "CHK_7.6 - LILO/GRUB Password"
+/bin/grep "^password" /boot/grub2/grub.cfg
+/bin/grep "^password" /etc/grub.cfg
+/bin/grep "^password" /etc/lilo.cfg
+echo
+
+echo "CHK_7.7 - Single User mode"
+/bin/grep 'respawn' /etc/inittab
+echo
+
+echo "CHK_7.8 - NFS Client request"
+echo "Compliant"
+echo
+
+
+echo "8.0 Banner"
+echo "---------------------------------------------"
+
+echo "CHK_8.1 - Warning Bannner"
+/bin/ls -la /etc/motd
+check_file $t
+echo
+/bin/ls -la /etc/issue
+echo
+/bin/ls -la /etc/issue.net
+echo
+
+echo "-----------------END OF OUTPUT-----------------------"

@@ -1,0 +1,1414 @@
+# Type - Configuration Audit Script
+# Application Name - RHEL5
+#!/bin/bash
+
+check_file(){
+	x="$t"
+	if [ ! -f $x ]; then
+		echo "File $x not found"
+	fi
+}
+
+echo "Audit script for RHEL SBM is running. Kindly wait for the script to terminate."
+
+exec > `hostname`_RHEL5.txt 2>errors.txt
+
+echo "LIN_00 - System Information"
+hostname
+/sbin/ifconfig -a|grep "inet addr"
+
+echo ""
+echo ""
+
+echo "1. File system Configuration"
+echo "------------------------------"
+echo "CHK_1.1 - Create Separate Partition for /tmp"
+cat /etc/fstab | grep "/tmp" 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.2 - Set nodev option for /tmp Partition"
+cat /etc/fstab | grep "/tmp" | grep "nodev" 2>/dev/null
+t=$_
+check_file $t
+mount | grep /tmp | grep nodev
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.3 - Set nosuid option for /tmp Partition"
+cat /etc/fstab | grep "/tmp" | grep "nosuid" 2>/dev/null
+t=$_
+check_file $t
+mount | grep /tmp | grep 'nosuid'
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.4 - Create Separate Partition for /var"
+cat /etc/fstab | grep "/var" 2>/dev/null
+rpm -qa | egrep "ssh|ssl" 
+
+echo "CHK_1.5 - Bind Mount the /var/tmp directory to /tmp"
+grep -e "^/tmp" /etc/fstab | grep /var/tmp
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.6 - Create Separate Partition for /var/log"
+cat /etc/fstab | grep "/var/log" 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.7 - Create Separate Partition for /var/log/audit"
+cat /etc/fstab | grep "/var/log/audit" 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.8 - Create Separate Partition for /home"
+cat /etc/fstab | grep "/home" 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.9 - Add nodev Option to /home"
+mount | grep "/home" 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.10 - Add nodev Option to Removable Media Partitions"
+echo "Manual Check"
+cat /etc/fstab
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.11 - Add noexec Option to Removable Media Partitions"
+echo "Manual Check"
+cat /etc/fstab
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.12 - Add nosuid Option to Removable Media Partitions"
+echo "Manual Check"
+cat /etc/fstab
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.13 - Add nodev Option to /dev/shm Partition"
+ mount | grep /dev/shm | grep nodev 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.14 - Add noexec Option to /dev/shm Partition"
+ mount | grep /dev/shm | grep noexec 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.15 - Add nosuid Option to /dev/shm Partition"
+mount | grep /dev/shm | grep nosuid 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.16 - Set Sticky Bit on All World-Writable Directories"
+find / -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null
+t=$_
+check_file $t
+echo
+
+
+echo "CHK_1.17 - Disable Mounting of cramfs Filesystems"
+/sbin/modprobe -n -v cramfs 2>/dev/null
+t=$_
+check_file $t
+/sbin/lsmod | grep cramfs
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.18 - Disable Mounting of freevxfs Filesystems"
+/sbin/modprobe -n -v freevxfs 2>/dev/null
+t=$_
+check_file $t
+/sbin/lsmod | grep freevxfs
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.19 - Disable Mounting of jffs2 Filesystems"
+/sbin/modprobe -n -v jffs2 2>/dev/null
+t=$_
+check_file $t
+/sbin/lsmod | grep jffs2
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.20 - Disable Mounting of hfs Filesystems"
+/sbin/modprobe -n -v hfs 2>/dev/null
+t=$_
+check_file $t
+/sbin/lsmod | grep hfs
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.21 - Disable Mounting of hfsplus Filesystems"
+/sbin/modprobe -n -v hfsplus 2>/dev/null
+t=$_
+check_file $t
+/sbin/lsmod | grep hfsplus
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.22 - Disable Mounting of squashfs Filesystems"
+/sbin/modprobe -n -v squashfs 2>/dev/null
+t=$_
+check_file $t
+/sbin/lsmod | grep squashfs
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.23 - Disable Mounting of udf Filesystems"
+/sbin/modprobe -n -v udf 2>/dev/null
+t=$_
+check_file $t
+/sbin/lsmod | grep udf
+t=$_
+check_file $t
+echo
+
+echo "CHK_1.24 - Set noexec option for /tmp Partition."
+cat /etc/fstab | grep "/tmp" | grep noexec 2>/dev/null
+t=$_
+check_file $t
+mount | grep /tmp | grep noexec
+t=$_
+check_file $t
+echo
+
+echo "2.0 Use the Latest OS Release"
+echo "-------------------------------"
+
+echo "CHK_2.1 - Use the Latest OS Release"
+cat /etc/redhat-release 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "3.0 Configure Software Updates"
+echo "-------------------------------"
+
+echo "CHK_3.1 - Configure Connection to the RHN RPM Repositories"
+yum check-update 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_3.2 - Verify Red Hat GPG Key is Installed"
+rpm -q --queryformat "%{SUMMARY}\n" gpg-pubkey  2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_3.3 - Verify that gpgcheck is Globally Activated"
+grep gpgcheck /etc/yum.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_3.4 - Disable the rhnsd Daemon"
+/sbin/chkconfig --list rhnsd 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_3.5 - Disable yum-updatesd"
+/sbin/chkconfig --list yum-updatesd 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_3.6 - Obtain Software Package Updates with yum"
+yum check-update 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_3.7 - Verify Package Integrity Using RPM"
+rpm -qVa | awk '$2 != "c" { print $0}' 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "4.0 Advanced Intrusion Detection Environment"
+echo "---------------------------------------------"
+
+echo "CHK_4.1 - Install AIDE"
+yum list aide 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_4.2 - Implement Periodic Execution of File Integrity"
+crontab -u root -l | grep aide 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "5.0 Configure SELinux"
+echo "---------------------------------------------"
+
+echo "CHK_5.1 - Enable SELinux in /etc/grub.conf"
+cat /etc/grub.conf | grep "selinux=0" 2>/dev/null
+t=$_
+check_file $t
+cat /etc/grub.conf | grep "enforcing=0" 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_5.2 - Set the SELinux State"
+/usr/sbin/sestatus 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_5.3 - Set the SELinux Policy"
+cat /etc/selinux/config | grep SELINUXTYPE=targeted 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_5.4 - Remove SETroubleshoot"
+/sbin/chkconfig --list setroubleshoot 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_5.5 - Disable MCS Translation Service (mcstrans)"
+/sbin/chkconfig --list mcstrans 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_5.6 - Check for Unconfined Daemons"
+ps -eZ | egrep "initrc" | egrep -vw "tr|ps|egrep|bash|awk" | tr ':' ' ' | awk '{ print $NF }' 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "6.0 Secure Boot Settings"
+echo "---------------------------------------------"
+
+echo "CHK_6.1 - Set User/Group Owner on /etc/grub.conf"
+stat -c "%u %g" /etc/grub.conf | egrep "0 0" 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_6.2 - Set Permissions on /etc/grub.conf"
+stat -c "%a" /etc/grub.conf  2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_6.3 - Set Boot Loader Password"
+grep "^password" /etc/grub.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_6.4 - Require Authentication for Single-User Mode"
+grep "sulogin" /etc/inittab 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_6.5 - Disable Interactive Boot"
+grep "^PROMPT=" /etc/sysconfig/init 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "7.0 Additional Process Hardening"
+echo "---------------------------------------------"
+
+echo "CHK_7.1 - Restrict Core Dumps"
+grep "hard core" /etc/security/limits.conf 2>/dev/null
+t=$_
+check_file $t
+sysctl fs.suid.dumpable 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_7.2 - Configure ExecShield"
+/sbin/sysctl kernel.exec-shield 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_7.3 - Enable Randomized Virtual Memory Region Placement"
+/sbin/sysctl kernel.randomize_va_space 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_7.4 - Enable XD/NX Support on 32-bit x86 Systems"
+yum list kernel-PAE 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_7.5 - Disable Prelink"
+grep PRELINKING /etc/sysconfig/prelink 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "8.0 Additional Process Hardening"
+echo "---------------------------------------------"
+
+echo "CHK_8.1 - Remove telnet-server"
+yum list telnet-server 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.2 - Remove telnet Clients"
+yum list telnet 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.3 - Remove rsh-server"
+yum list rsh-server 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.4 - Remove rsh"
+yum list rsh 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.5 - Remove NIS Client"
+yum list ypbind 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.6 - Remove NIS Server"
+yum list ypserv 2>/dev/null
+t=$_
+check_file $t
+sysctl fs.suid.dumpable 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.7 - Remove tftp"
+yum list tftp 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.8 - Remove tftp-server"
+yum list tftp-server 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.9 - Remove talk"
+yum list talk 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.10 - Remove talk-server"
+yum list talk-server 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.11 - Remove xinetd"
+yum list xinetd 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.12 - Disable chargen-dgram"
+/sbin/chkconfig --list chargen-dgram 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.13 - Disable chargen-stream"
+/sbin/chkconfig --list chargen-stream 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.14 - Disable daytime-dgram"
+/sbin/chkconfig --list daytime-dgram 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.15 - Disable daytime-stream"
+/sbin/chkconfig --list daytime-stream 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.16 - Disable echo-dgram"
+/sbin/chkconfig --list echo-dgram 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.17 - Disable echo-stream"
+/sbin/chkconfig --list echo-stream 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_8.18 - Disable tcpmux-server"
+/sbin/chkconfig --list tcpmux-server 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "9.0 Special Purpose Services"
+echo "---------------------------------------------"
+
+echo "CHK_9.1 - Set Daemon umask"
+grep umask /etc/sysconfig/init 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.2 - Remove X Windows"
+yum grouplist "X Window System" 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.3 - Disable Avahi Server"
+/sbin/chkconfig --list avahi-daemon 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.4 - Service Only via Required Protocol"
+grep use-ipv /etc/avahi/avahi-daemon.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.5 - Check Responses TTL Field"
+grep "^check-response-ttl=yes" /etc/avahi/avahi-daemon.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.6 - Prevent Other Programs from Using Avahi’s Port"
+grep "^disallow-other-stacks=yes" /etc/avahi/avahi-daemon.conf 2>/dev/null
+t=$_
+check_file $t
+/sbin/sysctl fs.suid.dumpable 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.7 - Disable Publishing"
+grep "^disable-publishing=yes" /etc/avahi/avahi-daemon.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.8 - Restrict Published Information"
+grep "^publish=" /etc/avahi/avahi-daemon.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.9 - Disable Print Server - CUPS"
+/sbin/chkconfig --list cups 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.10 - Remove DHCP Server"
+yum list dhcp 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.11 - Configure Network Time Protocol (NTP)"
+grep "restrict default" /etc/ntp.conf 2>/dev/null
+t=$_
+check_file $t
+grep "restrict -6 default" /etc/ntp.conf 2>/dev/null
+t=$_
+check_file $t
+grep "^server" /etc/ntp.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+grep "ntp:ntp" /etc/sysconfig/ntpd 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.12 - Disable NFS and RPC"
+/sbin/chkconfig --list nfslock 2>/dev/null
+t=$_
+check_file $t
+/sbin/chkconfig --list rpcgssd 2>/dev/null
+t=$_
+check_file $t
+/sbin/chkconfig --list rpcidmapd 2>/dev/null
+t=$_
+check_file $t
+/sbin/chkconfig --list portmap 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.13 - Remove DNS Server"
+yum list bind 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.14 - Remove FTP Server"
+yum list vsftpd 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.15 - Remove HTTP Server"
+yum list httpd 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.16 - Remove Dovecot (IMAP and POP3 services)"
+yum list dovecot 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.17 - Remove Samba"
+yum list samba 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.18 - Remove HTTP Proxy Server"
+yum list squid 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.19 - Remove SNMP Server"
+yum list net-snmp 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_9.20 - Configure Mail Transfer Agent for Local-Only Mode"
+netstat -an | grep LIST | grep "25" 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "10.0 Network Configuration and Firewalls"
+echo "---------------------------------------------"
+
+echo "CHK_10.1 - Disable IP Forwarding"
+/sbin/sysctl net.ipv4.ip_forward 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.2 - Disable Send Packet Redirects"
+/sbin/sysctl net.ipv4.conf.all.send_redirects 2>/dev/null
+t=$_
+check_file $t
+/sbin/sysctl net.ipv4.conf.default.send_redirects 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.3 - Disable Source Routed Packet Acceptance"
+/sbin/sysctl net.ipv4.conf.all.accept_source_route && /sbin/sysctl net.ipv4.conf.default.accept_source_route 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.4 - Disable ICMP Redirect Acceptance"
+/sbin/sysctl net.ipv4.conf.all.accept_redirects && /sbin/sysctl net.ipv4.conf.default.accept_redirects 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.5 - Disable Secure ICMP Redirect Acceptance"
+/sbin/sysctl net.ipv4.conf.all.secure_redirects && /sbin/sysctl net.ipv4.conf.default.secure_redirects 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.6 - Log Suspicious Packets"
+/sbin/sysctl net.ipv4.conf.all.log_martians 2>/dev/null
+t=$_
+check_file $t
+sysctl fs.suid.dumpable 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.7 - Enable Ignore Broadcast Requests"
+/sbin/sysctl net.ipv4.icmp_echo_ignore_broadcasts 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.8 - Enable Bad Error Message Protection"
+/sbin/sysctl net.ipv4.icmp_ignore_bogus_error_responses 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.9 - Enable RFC-recommended Source Route Validation"
+/sbin/sysctl net.ipv4.conf.all.rp_filter && /sbin/sysctl net.ipv4.conf.default.rp_filter 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.10 - Enable TCP SYN Cookies"
+/sbin/sysctl net.ipv4.tcp_syncookies 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.11 - Deactivate Wireless Interfaces"
+ifconfig -a 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.12 - Disable IPv6"
+grep ipv6 /etc/modprobe.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.13 - Disable IPv6 Router Advertisements"
+/sbin/sysctl net.ipv6.conf.default.accept_ra 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.14 - Disable IPv6 Redirect Acceptance"
+/sbin/sysctl net.ipv6.conf.default.accept_redirects 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.15 - Create /etc/hosts.allow"
+cat /etc/hosts.allow 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.16 - Verify Permissions on /etc/hosts.allow"
+/bin/ls -la /etc/hosts.allow 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.17 - Create /etc/hosts.deny"
+cat /etc/hosts.deny 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.18 - Verify Permissions on /etc/hosts.deny"
+/bin/ls -la /etc/hosts.deny 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.19 - Enable IPtables"
+/sbin/chkconfig --list iptables 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.20 - Enable IP6tables"
+/sbin/chkconfig --list ip6tables 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.21 - Disable DCCP"
+grep "install dccp /bin/true" /etc/modprobe.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+grep "install dccp /bin/true" /etc/modprobe.d/CIS.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.22 - Disable SCTP"
+grep "install sctp /bin/true" /etc/modprobe.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+grep "install sctp /bin/true" /etc/modprobe.d/CIS.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.23 - Disable RDS"
+grep "install rds /bin/true" /etc/modprobe.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+grep "install rds /bin/true" /etc/modprobe.d/CIS.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_10.24 - Disable TIPC"
+grep "install tipc /bin/true" /etc/modprobe.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+grep "install tipc /bin/true" /etc/modprobe.d/CIS.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "11.0 Logging and Auditing"
+echo "---------------------------------------------"
+
+echo "CHK_11.1 - Configure /etc/syslog.conf"
+ls -l /var/log 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.2 - Create and Set Permissions on syslog Log Files"
+echo "Manual Check. For every file in syslog.conf do ls -l <LOGFILE>"
+/bin/ls -la /etc/syslog 2>/dev/null
+echo
+
+echo "CHK_11.3 - Configure syslog to Send Logs to a Remote Log Host"
+grep "^*.*[^I][^I]*@" /etc/syslog.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.4 - Accept Remote syslog Messages Only on Designated Log Hosts"
+grep SYSLOGD_OPTIONS /etc/sysconfig/syslog 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.5 - Install the rsyslog package"
+yum list rsyslog 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.6 - Activate the rsyslog Service"
+chkconfig --list rsyslog 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.7 - Configure /etc/rsyslog.conf"
+echo "Manual Check" 
+cat /etc/rsyslog.conf 2>/dev/null
+ls -l /var/log/  2>/dev/null
+echo
+
+echo "CHK_11.8 - Create and Set Permissions on rsyslog Log Files"
+echo "Manual Check"
+echo
+
+echo "CHK_11.9 - Configure rsyslog to Send Logs to a Remote Log Host"
+grep "^*.*[^I][^I]*@" /etc/rsyslog.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.10 - Accept Remote rsyslog Messages Only on Designated Log Hosts"
+grep ‘$ModLoad’ /etc/rsyslog.conf 2>/dev/null
+t=$_
+check_file $t
+grep ‘$InputTCPServerRun’ /etc/rsyslog.conf
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.11 - Enable auditd Service"
+/sbin/chkconfig --list auditd 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.12 - Configure Audit Log Storage Size"
+grep max_log_file /etc/audit/auditd.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.13 - Keep All Auditing Information"
+grep max_log_file_action /etc/audit/auditd.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.14 - Enable Auditing for Processes That Start Prior to auditd"
+grep "audit=1" /etc/grub.conf 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.15 - Record Events That Modify Date and Time Information"
+grep time_change /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.16 - Record Events That Modify User/Group Information"
+grep identity /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.17 - Record Events That Modify the System’s Network Environment"
+grep system-locale /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.18 - Record Events That Modify the System’s Mandatory Access Controls"
+grep MAC_policy /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.19 - Collect Login and Logout Events"
+grep logins /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.20 - Collect Session Initiation Information"
+grep session /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.21 - Collect Discretionary Access Control Permission Modification Events"
+grep perm_mod /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.22 - Collect Unsuccessful Unauthorized Access Attempts to Files"
+grep access /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.23 - Collect Use of Privileged Commands"
+echo "Mnaul Check"
+echo
+
+echo "CHK_11.24 - Collect Successful File System Mounts"
+grep mounts /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.25 - Collect File Deletion Events by User"
+grep deleted /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.26 - Collect Changes to System Administration Scope (sudoers)"
+grep scope /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.27 - Collect System Administrator Actions (sudolog)"
+grep actions /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.28 - Collect Kernel Module Loading and Unloading"
+grep modules /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.29 - Make the Audit Configuration Immutable"
+grep "^-e 2" /etc/audit/audit.rules 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_11.30 - Configure logrotate"
+grep "{" /var/logrotate.d/syslog 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "12.0 System Access, Authentication and Authorization"
+echo "---------------------------------------------"
+
+echo "CHK_12.1 - Enable anacron Daemon"
+/sbin/chkconfig --list anacron 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.2 - Enable cron Daemon"
+/sbin/chkconfig --list cron 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.3 - Set User/Group Owner and Permission on /etc/anacrontab"
+stat -c "%a %u %g" /etc/anacrontab 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.4 - Set User/Group Owner and Permission on /etc/crontab"
+stat -c "%a %u %g" /etc/crontab 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.5 - Set User/Group Owner and Permission on /etc/cron.hourly"
+stat -c "%a %u %g" /etc/cron.hourly 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.6 - Set User/Group Owner and Permission on /etc/cron.daily"
+stat -c "%a %u %g" /etc/cron.daily  2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.7 - Set User/Group Owner and Permission on /etc/cron.weekly"
+stat -c "%a %u %g" /etc/cron.weekly  2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.8 - Set User/Group Owner and Permission on /etc/cron.monthly"
+stat -c "%a %u %g" /etc/cron.monthly  2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.9 - Set User/Group Owner and Permission on /etc/cron.d"
+stat -c "%a %u %g" /etc/cron.d  2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.10 - Restrict at Daemon"
+stat /etc/at.deny 2>/dev/null
+t=$_
+check_file $t
+stat -c "%a %u %g" /etc/at.allow  2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.11 - Restrict at/cron to Authorized Users"
+ls -l /etc/cron.deny && ls -l /etc/cron.allow 2>/dev/null
+t=$_
+check_file $t
+ls -l /etc/at.deny && ls -l /etc/at.allow 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.12 - Set SSH Protocol to 2"
+grep "^Protocol" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.13 - Set LogLevel to VERBOSE"
+grep "^LogLevel" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.14 - Set Permissions on /etc/sshd_config"
+/bin/ls -la /etc/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.15 - Disable SSH X11 Forwarding"
+grep "^X11Forwarding" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.16 - Set SSH MaxAuthTries to 4 or Less"
+grep "^MaxAuthTries" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.17 - Set SSH IgnoreRhosts to Yes"
+grep "^IgnoreRhosts" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.18 - Set SSH HostbasedAuthentication to No"
+grep "^HostbasedAuthentication" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.19 - Disable SSH Root Login"
+grep "^PermitRootLogin" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.20 - Set SSH PermitEmptyPasswords to No"
+grep "^PermitEmptyPasswords" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.21 - Do Not Allow Users to Set Environment Options"
+grep PermitUserEnvironment /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.22 - Use Only Approved Ciphers in Counter Mode"
+grep -v "Cipher" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.23 - Set Idle Timeout Interval for User Login: 10 mins"
+grep "^ClientAliveInterval" /etc/ssh/sshd_config && grep "^ClientAliveCountMax" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.24 - Limit Access via SSH"
+grep "^AllowUsers" /etc/ssh/sshd_config && grep "^AllowGroups" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+grep "^DenyUsers" /etc/ssh/sshd_config && grep "^DenyGroups" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.25 - Set SSH Banner"
+grep "^Banner" /etc/ssh/sshd_config 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.26 - Set Password Creation Requirement Parameters Using pam_cracklib"
+grep pam_cracklib.so /etc/pam.d/system-auth 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.27 - Set Strong Password Creation Policy Using pam_passwdqc"
+grep pam_passwdqc.so /etc/pam.d/system-auth 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.28 - Set Lockout for Failed Password Attempts: 5"
+grep "pam_tally2" /etc/pam.d/system-auth 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.29 - Use pam_deny.so to Deny Services"
+grep "^auth" /etc/pam.d/sshd 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.30 - Upgrade Password Hashing Algorithm to SHA-512"
+authconfig --test | grep hashing | grep sha512 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.31 - Limit Password Reuse: 15"
+grep "remember" /etc/pam.d/system_auth 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.32 - Remove the pam_ccreds Package"
+yum list pam_ccreds 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.33 - Restrict root Login to System Console"
+cat /etc/securetty 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_12.34 - Restrict Access to the su Command"
+grep pam_wheel.so /etc/pam.d/su && grep wheel /etc/group 2>/dev/null
+t=$_
+check_file $t
+echo
+
+
+echo "13.0 Network Configuration and Firewalls"
+echo "---------------------------------------------"
+
+echo "CHK_13.1 - Disable System Accounts"
+echo "Manual Check"
+cat /etc/passwd | cut -d':' -f1 | xargs -i passwd -S {} 	2>/dev/null
+echo
+
+echo "CHK_13.2 - Set Shadow Password Suite Parameters (/etc/login.defs): Set Password Expiration Days: 60 days"
+grep PASS_MAX_DAYS /etc/login.defs 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_13.3 - Set Shadow Password Suite Parameters (/etc/login.defs): Set Password Change Minimum Number of Days: 5"
+grep PASS_MIN_DAYS /etc/login.defs 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_13.4 - Set Shadow Password Suite Parameters (/etc/login.defs): Set Password Expiring Warning Days: 7"
+grep PASS_WARN_AGE /etc/login.defs 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_13.5 - Set Default Group for root Account"
+grep root /etc/passwd | cut -f4 -d: 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_13.6 - Set Default umask for Users"
+grep "^UMASK=077" /etc/bashrc && grep "^umask 077" /etc/profile 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_13.7 - Lock Inactive User Accounts"
+/usr/sbin/useradd -D | grep INACTIVE 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "14.0 Warning Banners"
+echo "---------------------------------------------"
+
+echo "CHK_14.1 - Remove OS Information from Login Warning Banners"
+egrep '(\\v|\\r|\\m|\\s)' /etc/issue && egrep '(\\v|\\r|\\m|\\s)' /etc/motd && egrep'(\\v|\\r|\\m|\\s)' /etc/issue.net 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_14.2 - Set GNOME Warning Banner"
+grep "<Text of Warning banner>" /usr/share/gdm/themes/RHEL/RHEL.xml 2>/dev/null
+t=$_
+check_file $t
+/sbin/sysctl net.ipv4.conf.default.send_redirects 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_14.3 - Set Warning Banner for Standard Login Services"
+cat /etc/motd && cat /etc/issue && cat /etc/issue.net  2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "15.0 File Permissions"
+echo "---------------------------------------------"
+
+echo "CHK_15.1 - Verify Permissions on/etc/passwd"
+/bin/ls -la /etc/passwd 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_15.2 - Verify Permissions on/etc/shadow"
+/bin/ls -la /etc/shadow 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_15.3 - Verify Permissions on/etc/gshadow"
+/bin/ls -la /etc/gshadow 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_15.4 - Verify Permissions on/etc/group"
+/bin/ls -la /etc/group 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_15.5 - Verify User/Group Ownership on/etc/passwd"
+/bin/ls -la /etc/passwd 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_15.6 - Verify User/Group Ownership on/etc/shadow"
+/bin/ls -l /etc/shadow 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_15.7 - Verify User/Group Ownership on/etc/gshadow"
+/bin/ls -l /etc/gshadow 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_15.8 - Verify User/Group Ownership on/etc/group"
+/bin/ls -l /etc/group 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_15.9 - Find World Writable Files "
+df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type f -perm -0002
+t=$_
+check_file $t
+echo
+
+echo "16.0 User and Group Settings"
+echo "---------------------------------------------"
+
+echo "CHK_16.1 - Ensure Password Fields are Not Empty"
+/bin/cat /etc/shadow | /bin/awk -F: '($2 == "" ) { print $1 " does not have a password "}' 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_16.2 - Verify No Legacy + Entries Exist in /etc/passwdFile"
+/bin/grep '^+:' /etc/passwd  2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_16.3 - Verify No Legacy + Entries Exist in /etc/shadowFile"
+/bin/grep '^+:' /etc/shadow 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_16.4 - Verify No Legacy + Entries Exist in /etc/groupFile"
+/bin/grep '^+:' /etc/group 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "CHK_16.5 - Verify No UID 0 Accounts Exist Other Than root"
+/bin/cat /etc/passwd | grep "0" 2>/dev/null
+t=$_
+check_file $t
+echo
+
+echo "------------------------Remaining-------------------------"
+
+"CHK_16.6 - Ensure root PATH Integrity"
+echo "Manual Check"
+echo
+
+echo "CHK_16.7 - Check Permissions on User .netrc Files"
+echo "Manual Check"
+echo 
+
+echo "CHK_16.8 - Check for Presence of User .rhosts Files"
+echo "Manual Check"
+echo
+
+echo "CHK_16.9 - Check Groups in /etc/passwd"
+echo "Manual Check"
+echo
+
+echo "CHK_16.10 - Check for Duplicate UIDs"
+echo "Manual Check"
+echo
+
+echo "CHK_16.11 - Check for Duplicate GIDs"
+echo "Manual Check"
+echo
+
+echo "CHK_16.12 - Check That Reserved UIDs Are Assigned to System Accounts "
+echo "Manual Check"
+echo
+
+echo "CHK_16.13 - Check for Duplicate User Names "
+echo "Manual Check"
+echo
+
+echo "CHK_16.14 - Check for Duplicate Group Names "
+echo "Manual Check"
+echo
+
+echo "CHK_16.15 - Check for Presence of User .netrc "
+echo "Manual Check"
+echo
+
+echo "CHK_16.16 - Check for Presence of User .forward Files"
+echo "Manual Check"
+echo
+
+echo "CHK_16.17 - Check for Presence of User .forward Files"
+echo "Manual Check"
+
+echo "-----------------END OF OUTPUT-----------------------"

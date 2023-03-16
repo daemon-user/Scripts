@@ -1,0 +1,261 @@
+# Type - Configuration Audit Script
+# Application Name - Apache
+#!/bin/bash
+
+check_file(){
+	x="$t"
+	if [ ! -f $x ]; then
+		echo "File $x not found"
+	fi
+}
+
+echo "Audit script for SUSELinux SBM is running. Kindly wait for the script to terminate."
+
+exec > `hostname`_Apache.txt 2>errors.txt
+
+echo "LIN_00 - System Information"
+hostname
+/sbin/ifconfig -a|grep "inet addr"
+
+echo ""
+echo ""
+echo ""
+echo ""
+
+echo "1.0 MINIMIZE APACHE MODULES"
+echo "------------------------------"
+echo "1.1 Enable the Log Config Module"
+/usr/local/apache2*//bin/httpd -M | grep log_config
+t=$_
+check_file $t
+echo
+
+echo "1.2 Disable WebDAV modules"
+/usr/local/apache2*//bin/httpd -M | grep ' dav_[[:print:]]+module'
+echo
+
+echo "1.3 Disable Status and Info modules"
+/usr/local/apache2*//bin/httpd -M | egrep 'status_module'
+echo
+
+echo "1.4 Disable Autoindex module"
+/usr/local/apache2*//bin/httpd -M | grep autoindex_module
+echo
+
+echo "1.5 Disable Proxy Modules"
+/usr/local/apache2*//bin/httpd -M | grep proxy_
+echo
+
+echo "1.6 Disable User Directories Modules"
+/usr/local/apache2*//bin/httpd -M | grep userdir_
+echo
+
+echo "1.7 Disable Info Module"
+/usr/local/apache2*//bin/httpd -M | egrep 'info_module'
+echo
+
+echo "2.0 PRINCIPLES, PERMISSIONS, AND OWNERSHIP"
+echo "------------------------------"
+echo "2.1 Run the Apache Web Server as a non-root user"
+/bin/grep -i '^User' /usr/local/apache2*/conf/httpd.conf
+echo
+
+echo ""
+/bin/grep -i '^Group' /usr/local/apache2*/conf/httpd.conf
+echo
+
+echo ""
+/bin/grep '^UID_MIN' /etc/login.defs
+echo
+
+echo ""
+ps axu | grep httpd | grep -v '^root'
+echo
+
+echo "2.2 Give the Apache User Account an Invalid Shell"
+/bin/grep apache /etc/passwd
+echo
+
+echo "2.3 Lock the Apache User Account"
+passwd -S apache
+echo
+
+echo "2.4 Set Ownership on Apache Directories and Files"
+find /usr/local/apache2*/ \! -user root -ls
+echo
+
+echo "2.5 Set Group Id on Apache Directories and Files"
+find /usr/local/apache2*/ -path /usr/local/apache2*/htdocs -prune -o \! -group root -ls
+echo
+
+echo "2.6 Secure the Lock File"
+echo "Manual"
+echo
+
+echo "2.7 Set Pid File Security"
+echo "Manual"
+echo
+
+echo "2.8 Set ScoreBoard File Security"
+echo "Manual"
+echo
+
+echo "2.9 Restrict Group Write Access for the Apache Directories and Files"
+find -L /usr/local/apache2*/ \! -type l -perm /g=w -ls
+echo
+
+echo "2.10 Restrict Group Write Access for the Document Root Directories and Files"
+echo "Check Command"
+echo
+
+echo "3.0 APACHE ACCESS CONTROL"
+echo "------------------------------"
+echo "3.1 Deny Access to OS Root Directory"
+perl -ne 'print if /^ *<Directory *\//i .. /<\/Directory/i' /usr/local/apache2*/conf/httpd.conf
+echo
+
+echo "3.2 Allow Appropriate Access to Web Content"
+perl -ne 'print if /^ *<Directory */i .. //<\/Directory/i' /usr/local/apache2*/conf/httpd.conf /usr/local/apache2*/conf.d/*.conf
+echo
+
+perl -ne 'print if /^ *<Location */i .. //<\/Location/i' /usr/local/apache2*/conf/httpd.conf /usr/local/apache2*/conf.d/*.conf
+echo
+
+/bin/grep -i -C 6 -i 'Allow[[:space:]]from' $APACHE_PREFIX/conf/httpd.conf /usr/local/apache2*/conf.d/*.conf
+echo
+
+echo "3.3 Restrict OverRide for the OS Root Directory"
+perl -ne 'print if /^ *<Directory *\//i .. /<\/Directory/i' /usr/local/apache2*/conf/httpd.conf
+echo
+
+echo "3.4 Restrict OverRide for All Directories"
+/bin/grep -i AllowOverride /usr/local/apache2*/conf/httpd.conf
+echo
+
+echo "4.0 MINIMIZE FEATURES, CONTENT AND OPTIONS"
+echo "------------------------------"
+echo "4.1 Restrict Options for the OS Root Directory"
+perl -ne 'print if /^ *<Directory */i .. /<\/Directory/i' /usr/local/apache2*/conf/httpd.conf
+echo
+
+echo "4.2 Restrict Options for the Web Root Directory"
+perl -ne 'print if /^ *<Directory */i .. /<\/Directory/i' /usr/local/apache2*/conf/httpd.conf
+echo
+
+echo "4.3 Remove Default HTML Content"
+echo "Manual"
+echo
+
+echo "4.4 Remove Default CGI Content"
+echo "Manual"
+echo
+
+echo "4.5 Limit HTTP Request Methods"
+echo "Manual"
+echo
+
+echo "4.6 Disable HTTP TRACE Methods"
+echo "Manual"
+echo
+
+echo "4.7 Restrict HTTP Protocol Versions"
+/bin/grep Rewrite /usr/local/apache2*/conf/httpd.conf
+echo
+
+echo "4.8 Restrict Access to .ht* files"
+echo "Manual"
+echo
+
+echo "4.9 Restrict File Extensions"
+echo "Manual"
+echo
+
+echo "4.10 Deny IP Address Based Requests"
+/bin/grep Rewrite /usr/local/apache2*/conf/httpd.conf
+echo
+
+echo "5.0 OPERATIONS - LOGGING, MONITORING AND MAINTENANCE"
+echo "------------------------------"
+echo "5.1 Configure the Error Log"
+/bin/grep LogLevel /usr/local/apache2*/conf/*
+echo
+
+/bin/grep ErrorLog /usr/local/apache2*/conf/*
+echo
+
+echo "5.2 Configure the Access Log"
+echo "Manual"
+echo
+
+echo "5.3 Implement Log Monitoring"
+echo "Manual"
+echo
+
+echo "5.4 Configure a Syslog Facility for Error Logging"
+
+echo
+
+echo "5.5 Log Storage and Rotation"
+echo "Manual"
+echo
+
+echo "5.6 Apply Applicable Patches"
+echo "Manual"
+echo
+
+echo "6.0 USE SSL / TLS"
+echo "------------------------------"
+echo "6.1 Install mod_ssl and/or mod_nss"
+/usr/local/apache2*//bin/httpd -M | egrep 'ssl_module|nss_module'
+echo
+
+echo "6.2 Protect the Servers Private Key"
+echo "Manual"
+echo
+
+echo "6.3 Restrict weak SSL Protocols and Ciphers"
+echo "Manual"
+echo
+
+echo "6.4 Disable SSL Insecure Renegotiation"
+echo "Manual"
+echo
+
+echo "6.5 Ensure SSL Compression is not Enabled"
+echo "Manual"
+echo
+
+echo "7.0 INFORMATION LEAKAGE"
+echo "------------------------------"
+echo "7.1 Set ServerToken to 'Prod'"
+echo "Manual"
+echo
+
+echo "7.2 Set Server Signature to 'Off'"
+echo "Manual"
+echo
+
+echo "7.3 Information Leakage via Default Apache Content"
+echo "Manual"
+echo
+
+echo "8.0 MISCELLANEOUS CONFIGURATION SETTINGS"
+echo "------------------------------"
+echo "8.1 Set Timeout to 10 or less"
+echo "Manual"
+echo
+
+echo "8.2 Set the KeepAlive directive to On"
+echo "Manual"
+echo
+
+echo "8.3 Set MaxKeepAliveRequests to 100 or greater"
+echo "Manual"
+echo
+
+echo "8.4 Set KeepAliveTimeout Low to Mitigate Denial of Service"
+echo "Manual"
+echo
+
+
+echo "-----------------END OF OUTPUT-----------------------"
